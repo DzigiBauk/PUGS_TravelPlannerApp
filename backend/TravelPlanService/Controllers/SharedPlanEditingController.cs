@@ -12,7 +12,7 @@ namespace TravelPlanService.Controllers;
 
 [ApiController]
 [Route("shared/{token}")]
-[AllowAnonymous]
+[Authorize]
 public class SharedPlanEditingController : ControllerBase
 {
     private readonly TravelPlanDbContext _dbContext;

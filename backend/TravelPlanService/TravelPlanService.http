@@ -2,6 +2,7 @@
 @Token = replace-with-jwt
 @AdminToken = replace-with-admin-jwt
 @PlanId = 1
+@ShareToken = replace-with-edit-share-token
 
 GET {{TravelPlanService_HostAddress}}/health
 Accept: application/json
@@ -50,6 +51,26 @@ Content-Type: application/json
   "latitude": 41.8902,
   "longitude": 12.4922,
   "status": "Planned"
+}
+
+###
+
+GET {{TravelPlanService_HostAddress}}/shared/{{ShareToken}}
+Accept: application/json
+
+###
+
+PUT {{TravelPlanService_HostAddress}}/shared/{{ShareToken}}/plan
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "name": "Updated shared trip",
+  "description": "Edited by an authenticated recipient",
+  "startDate": "2026-07-01",
+  "endDate": "2026-07-07",
+  "budget": 2000,
+  "notes": "Shared editing requires both JWT and EDIT token"
 }
 
 ###
