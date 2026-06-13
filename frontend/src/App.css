@@ -1845,6 +1845,22 @@
   text-align: center;
 }
 
+.shared-auth-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+}
+
+.shared-auth-notice .btn-primary {
+  flex-shrink: 0;
+}
+
 .shared-plan-form {
   display: flex;
   flex-direction: column;
@@ -1882,6 +1898,15 @@
 }
 
 @media (max-width: 639px) {
+  .shared-auth-notice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .shared-auth-notice .btn-primary {
+    text-align: center;
+  }
+
   .travel-plan-form,
   .plan-details-header,
   .details-section {

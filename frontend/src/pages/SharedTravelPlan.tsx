@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Link, useParams } from 'react-router-dom';
 import SharedPlanForm from '../components/SharedPlanForm';
 import SuccessMessage from '../components/SuccessMessage';
 import TravelPlanView from '../components/travel-plan/TravelPlanView';
@@ -14,10 +15,12 @@ import type {
   TravelPlan,
 } from '../models/TravelPlan';
 import { travelPlanService, type TravelPlanRequestDto } from '../services/travelPlanService';
+import type { RootState } from '../store';
 import { getApiErrorMessage } from '../utils/apiError';
 
 export default function SharedTravelPlan() {
   const { token } = useParams<{ token: string }>();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [accessType, setAccessType] = useState<'VIEW' | 'EDIT'>('VIEW');
   const [loading, setLoading] = useState(() => Boolean(token));
@@ -78,7 +81,9 @@ export default function SharedTravelPlan() {
     return <div className="error-message">{error || 'Shared plan not found.'}</div>;
   }
 
-  const isEditable = accessType === 'EDIT';
+  const hasEditAccess = accessType === 'EDIT';
+  const isEditable = hasEditAccess && isAuthenticated;
+  const sharedPath = `/shared/${token}`;
   const updatePlan = async (dto: TravelPlanRequestDto) => {
     await mutate(() => travelPlanService.updateSharedPlan(token, dto), 'Travel plan updated.');
     setShowPlanForm(false);
@@ -123,13 +128,25 @@ export default function SharedTravelPlan() {
       shareToken={token}
       banner={(
         <div className="shared-plan-banner">
-          {isEditable ? 'Editable shared travel plan' : 'Read-only shared travel plan'}
+          {isEditable
+            ? 'Editable shared travel plan'
+            : hasEditAccess
+              ? 'Sign in to edit this shared travel plan'
+              : 'Read-only shared travel plan'}
         </div>
       )}
       messages={(
         <>
           <SuccessMessage message={success} onDismiss={() => setSuccess('')} />
           {error && <div className="error-message">{error}</div>}
+          {hasEditAccess && !isAuthenticated && (
+            <div className="shared-auth-notice">
+              <span>This link allows editing, but changes require an authenticated account.</span>
+              <Link to="/login" state={{ from: sharedPath }} className="btn-primary">
+                Sign in to edit
+              </Link>
+            </div>
+          )}
         </>
       )}
       headerActions={isEditable && (

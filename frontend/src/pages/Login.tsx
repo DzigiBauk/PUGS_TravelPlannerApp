@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { RootState, AppDispatch } from '../store'
 import { login } from '../store/slices/authSlice'
 
@@ -8,14 +8,19 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const dispatch = useDispatch<AppDispatch>()
+  const location = useLocation()
   const navigate = useNavigate()
   const { loading, error } = useSelector((state: RootState) => state.auth)
+  const requestedPath = (location.state as { from?: string } | null)?.from
+  const returnPath = requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
+    ? requestedPath
+    : '/dashboard'
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const result = await dispatch(login({ email, password }))
     if (login.fulfilled.match(result)) {
-      navigate('/dashboard')
+      navigate(returnPath, { replace: true })
     }
   }
 
@@ -50,7 +55,7 @@ function Login() {
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
         <p style={{ textAlign: 'center', fontSize: '0.9rem', marginTop: 'var(--space-2)' }}>
-          Do not have an account? <Link to="/register">Create one</Link>
+          Do not have an account? <Link to="/register" state={{ from: returnPath }}>Create one</Link>
         </p>
       </form>
     </div>

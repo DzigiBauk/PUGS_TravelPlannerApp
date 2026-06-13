@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { RootState, AppDispatch } from '../store'
 import type { UserRole } from '../models/User'
 import { register } from '../store/slices/authSlice'
@@ -11,14 +11,19 @@ function Register() {
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<UserRole>('User')
   const dispatch = useDispatch<AppDispatch>()
+  const location = useLocation()
   const navigate = useNavigate()
   const { loading, error } = useSelector((state: RootState) => state.auth)
+  const requestedPath = (location.state as { from?: string } | null)?.from
+  const returnPath = requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
+    ? requestedPath
+    : role === 'Admin' ? '/admin' : '/dashboard'
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const result = await dispatch(register({ name, email, password, role }))
     if (register.fulfilled.match(result)) {
-      navigate(role === 'Admin' ? '/admin' : '/dashboard', {
+      navigate(returnPath, {
         state: { success: 'Account created successfully.' },
       })
     }
@@ -79,7 +84,7 @@ function Register() {
           {loading ? 'Creating account...' : 'Create account'}
         </button>
         <p style={{ textAlign: 'center', fontSize: '0.9rem', marginTop: 'var(--space-2)' }}>
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account? <Link to="/login" state={{ from: returnPath }}>Sign in</Link>
         </p>
       </form>
     </div>
