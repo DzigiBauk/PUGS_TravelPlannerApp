@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravelPlanService.Data;
-using TravelPlanService.Models.Cache;
 using TravelPlanService.Models.Dtos;
 using TravelPlanService.Models.Entities;
 using TravelPlanService.Services;
@@ -17,18 +16,18 @@ public class SharedPlanEditingController : ControllerBase
 {
     private readonly TravelPlanDbContext _dbContext;
     private readonly IMapper _mapper;
-    private readonly ITravelPlanCacheService _cacheService;
+    private readonly ITravelPlanBudgetService _budgetService;
     private readonly IRouteInvalidationService _routeInvalidationService;
 
     public SharedPlanEditingController(
         TravelPlanDbContext dbContext,
         IMapper mapper,
-        ITravelPlanCacheService cacheService,
+        ITravelPlanBudgetService budgetService,
         IRouteInvalidationService routeInvalidationService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
-        _cacheService = cacheService;
+        _budgetService = budgetService;
         _routeInvalidationService = routeInvalidationService;
     }
 
@@ -53,22 +52,7 @@ public class SharedPlanEditingController : ControllerBase
 
     private async Task UpdateCacheAsync(long planId)
     {
-        var plan = await _dbContext.TravelPlans.AsNoTracking().FirstOrDefaultAsync(tp => tp.Id == planId);
-        if (plan == null) return;
-
-        var totalExpenses = await _dbContext.Expenses
-            .Where(expense => expense.TravelPlanId == planId)
-            .SumAsync(expense => expense.Amount);
-
-        await _cacheService.SetAsync(new TravelPlanCacheEntry
-        {
-            Id = plan.Id,
-            Name = plan.Name,
-            Budget = plan.Budget,
-            TotalExpenses = totalExpenses,
-            RemainingBudget = plan.Budget - totalExpenses,
-            CachedAt = DateTimeOffset.UtcNow
-        });
+        await _budgetService.RefreshCacheAsync(planId);
     }
 
     [HttpPut("plan")]
@@ -161,6 +145,7 @@ public class SharedPlanEditingController : ControllerBase
         _dbContext.Activities.RemoveRange(activities);
         _dbContext.Destinations.Remove(destination);
         await _dbContext.SaveChangesAsync();
+        await UpdateCacheAsync(planId);
         await _routeInvalidationService.InvalidatePlanAsync(planId);
         return NoContent();
     }
@@ -179,6 +164,7 @@ public class SharedPlanEditingController : ControllerBase
         activity.TravelPlanId = planId;
         _dbContext.Activities.Add(activity);
         await _dbContext.SaveChangesAsync();
+        await UpdateCacheAsync(planId);
         await _routeInvalidationService.InvalidatePlanAsync(planId);
         return Ok(_mapper.Map<ActivityResponseDto>(activity));
     }
@@ -197,6 +183,7 @@ public class SharedPlanEditingController : ControllerBase
 
         _mapper.Map(dto, activity);
         await _dbContext.SaveChangesAsync();
+        await UpdateCacheAsync(planId);
         await _routeInvalidationService.InvalidatePlanAsync(planId);
         return NoContent();
     }
@@ -211,6 +198,7 @@ public class SharedPlanEditingController : ControllerBase
         if (activity == null) return NotFound();
         _dbContext.Activities.Remove(activity);
         await _dbContext.SaveChangesAsync();
+        await UpdateCacheAsync(planId);
         await _routeInvalidationService.InvalidatePlanAsync(planId);
         return NoContent();
     }

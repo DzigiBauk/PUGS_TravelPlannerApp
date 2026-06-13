@@ -40,6 +40,7 @@ internal sealed class TravelPlanService : StatelessService
 
                     builder.Services.AddSingleton<ITravelPlanCacheService, InMemoryTravelPlanCacheService>();
                     builder.Services.AddScoped<ITravelPlanDeletionService, TravelPlanDeletionService>();
+                    builder.Services.AddScoped<ITravelPlanBudgetService, TravelPlanBudgetService>();
 
                     var internalApiKey = builder.Configuration["InternalApi:Key"];
                     if (string.IsNullOrWhiteSpace(internalApiKey) || internalApiKey.Length < 32)

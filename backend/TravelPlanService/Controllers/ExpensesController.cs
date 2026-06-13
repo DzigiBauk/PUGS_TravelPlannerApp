@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravelPlanService.Data;
-using TravelPlanService.Models.Cache;
 using TravelPlanService.Models.Dtos;
 using TravelPlanService.Models.Entities;
 using TravelPlanService.Services;
@@ -18,12 +17,18 @@ public class ExpensesController : ControllerBase
     private readonly TravelPlanDbContext _dbContext;
     private readonly IMapper _mapper;
     private readonly ITravelPlanCacheService _cacheService;
+    private readonly ITravelPlanBudgetService _budgetService;
 
-    public ExpensesController(TravelPlanDbContext dbContext, IMapper mapper, ITravelPlanCacheService cacheService)
+    public ExpensesController(
+        TravelPlanDbContext dbContext,
+        IMapper mapper,
+        ITravelPlanCacheService cacheService,
+        ITravelPlanBudgetService budgetService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
         _cacheService = cacheService;
+        _budgetService = budgetService;
     }
 
     private long GetCurrentUserId()
@@ -40,22 +45,7 @@ public class ExpensesController : ControllerBase
 
     private async Task UpdateCacheAsync(long planId)
     {
-        var plan = await _dbContext.TravelPlans.AsNoTracking().FirstOrDefaultAsync(tp => tp.Id == planId);
-        if (plan == null) return;
-
-        var totalExpenses = await _dbContext.Expenses
-            .Where(e => e.TravelPlanId == planId)
-            .SumAsync(e => e.Amount);
-
-        await _cacheService.SetAsync(new TravelPlanCacheEntry
-        {
-            Id = planId,
-            Name = plan.Name,
-            Budget = plan.Budget,
-            TotalExpenses = totalExpenses,
-            RemainingBudget = plan.Budget - totalExpenses,
-            CachedAt = DateTimeOffset.UtcNow
-        });
+        await _budgetService.RefreshCacheAsync(planId);
     }
 
     [HttpGet]
@@ -155,9 +145,7 @@ public class ExpensesController : ControllerBase
         }
 
         var plan = await _dbContext.TravelPlans.AsNoTracking().FirstAsync(tp => tp.Id == planId);
-        var totalExpenses = await _dbContext.Expenses
-            .Where(e => e.TravelPlanId == planId)
-            .SumAsync(e => e.Amount);
+        var totalExpenses = await _budgetService.CalculateTotalAsync(planId);
 
         var response = new BudgetResponseDto
         {
@@ -167,15 +155,7 @@ public class ExpensesController : ControllerBase
             RemainingBudget = plan.Budget - totalExpenses
         };
 
-        await _cacheService.SetAsync(new TravelPlanCacheEntry
-        {
-            Id = planId,
-            Name = plan.Name,
-            Budget = plan.Budget,
-            TotalExpenses = totalExpenses,
-            RemainingBudget = plan.Budget - totalExpenses,
-            CachedAt = DateTimeOffset.UtcNow
-        });
+        await _budgetService.RefreshCacheAsync(planId);
 
         return Ok(response);
     }

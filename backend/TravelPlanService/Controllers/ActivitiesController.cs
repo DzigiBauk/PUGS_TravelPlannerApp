@@ -16,15 +16,18 @@ public class ActivitiesController : ControllerBase
 {
     private readonly TravelPlanDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly ITravelPlanBudgetService _budgetService;
     private readonly IRouteInvalidationService _routeInvalidationService;
 
     public ActivitiesController(
         TravelPlanDbContext dbContext,
         IMapper mapper,
+        ITravelPlanBudgetService budgetService,
         IRouteInvalidationService routeInvalidationService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _budgetService = budgetService;
         _routeInvalidationService = routeInvalidationService;
     }
 
@@ -101,6 +104,7 @@ public class ActivitiesController : ControllerBase
 
         _dbContext.Activities.Add(activity);
         await _dbContext.SaveChangesAsync();
+        await _budgetService.RefreshCacheAsync(planId);
         await _routeInvalidationService.InvalidatePlanAsync(planId);
 
         return CreatedAtAction(nameof(GetById), new { planId, id = activity.Id }, _mapper.Map<ActivityResponseDto>(activity));
@@ -128,6 +132,7 @@ public class ActivitiesController : ControllerBase
 
         _mapper.Map(dto, activity);
         await _dbContext.SaveChangesAsync();
+        await _budgetService.RefreshCacheAsync(planId);
         await _routeInvalidationService.InvalidatePlanAsync(planId);
 
         return NoContent();
@@ -145,6 +150,7 @@ public class ActivitiesController : ControllerBase
 
         _dbContext.Activities.Remove(activity);
         await _dbContext.SaveChangesAsync();
+        await _budgetService.RefreshCacheAsync(planId);
         await _routeInvalidationService.InvalidatePlanAsync(planId);
 
         return NoContent();

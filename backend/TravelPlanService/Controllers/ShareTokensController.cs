@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using TravelPlanService.Data;
 using TravelPlanService.Models.Dtos;
 using TravelPlanService.Models.Entities;
+using TravelPlanService.Services;
 
 namespace TravelPlanService.Controllers;
 
@@ -91,11 +92,16 @@ public class SharedPlansController : ControllerBase
 {
     private readonly TravelPlanDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly ITravelPlanBudgetService _budgetService;
 
-    public SharedPlansController(TravelPlanDbContext dbContext, IMapper mapper)
+    public SharedPlansController(
+        TravelPlanDbContext dbContext,
+        IMapper mapper,
+        ITravelPlanBudgetService budgetService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _budgetService = budgetService;
     }
 
     [HttpGet]
@@ -119,7 +125,9 @@ public class SharedPlansController : ControllerBase
         }
 
         var dto = _mapper.Map<TravelPlanResponseDto>(shareToken.TravelPlan);
-        dto.TotalExpenses = shareToken.TravelPlan!.Expenses.Sum(e => e.Amount);
+        dto.TotalExpenses = _budgetService.CalculateTotal(
+            shareToken.TravelPlan!.Expenses,
+            shareToken.TravelPlan.Activities);
         dto.RemainingBudget = shareToken.TravelPlan.Budget - dto.TotalExpenses;
         return Ok(dto);
     }

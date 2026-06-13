@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravelPlanService.Data;
 using TravelPlanService.Models.Dtos;
+using TravelPlanService.Models.Entities;
 using TravelPlanService.Services;
 
 namespace TravelPlanService.Controllers;
@@ -15,15 +16,18 @@ public sealed class AdminTravelPlansController : ControllerBase
 {
     private readonly TravelPlanDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly ITravelPlanBudgetService _budgetService;
     private readonly ITravelPlanDeletionService _deletionService;
 
     public AdminTravelPlansController(
         TravelPlanDbContext dbContext,
         IMapper mapper,
+        ITravelPlanBudgetService budgetService,
         ITravelPlanDeletionService deletionService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _budgetService = budgetService;
         _deletionService = deletionService;
     }
 
@@ -41,7 +45,10 @@ public sealed class AdminTravelPlansController : ControllerBase
                 StartDate = plan.StartDate,
                 EndDate = plan.EndDate,
                 Budget = plan.Budget,
-                TotalExpenses = plan.Expenses.Sum(expense => expense.Amount),
+                TotalExpenses = plan.Expenses.Sum(expense => expense.Amount)
+                    + plan.Activities
+                        .Where(activity => activity.Status != ActivityStatus.Cancelled)
+                        .Sum(activity => activity.EstimatedCost ?? 0m),
                 CreatedAt = plan.CreatedAt
             })
             .ToListAsync();
@@ -63,7 +70,7 @@ public sealed class AdminTravelPlansController : ControllerBase
         if (plan == null) return NotFound();
 
         var response = _mapper.Map<TravelPlanResponseDto>(plan);
-        response.TotalExpenses = plan.Expenses.Sum(expense => expense.Amount);
+        response.TotalExpenses = _budgetService.CalculateTotal(plan.Expenses, plan.Activities);
         response.RemainingBudget = plan.Budget - response.TotalExpenses;
         return Ok(response);
     }

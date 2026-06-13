@@ -18,6 +18,7 @@ public class TravelPlansController : ControllerBase
     private readonly TravelPlanDbContext _dbContext;
     private readonly IMapper _mapper;
     private readonly ITravelPlanCacheService _cacheService;
+    private readonly ITravelPlanBudgetService _budgetService;
     private readonly IRouteInvalidationService _routeInvalidationService;
     private readonly ITravelPlanDeletionService _deletionService;
 
@@ -25,12 +26,14 @@ public class TravelPlansController : ControllerBase
         TravelPlanDbContext dbContext,
         IMapper mapper,
         ITravelPlanCacheService cacheService,
+        ITravelPlanBudgetService budgetService,
         IRouteInvalidationService routeInvalidationService,
         ITravelPlanDeletionService deletionService)
     {
         _dbContext = dbContext;
         _mapper = mapper;
         _cacheService = cacheService;
+        _budgetService = budgetService;
         _routeInvalidationService = routeInvalidationService;
         _deletionService = deletionService;
     }
@@ -47,11 +50,18 @@ public class TravelPlansController : ControllerBase
         var userId = GetCurrentUserId();
         var plans = await _dbContext.TravelPlans
             .AsNoTracking()
+            .Include(tp => tp.Activities)
+            .Include(tp => tp.Expenses)
             .Where(tp => tp.UserId == userId)
             .OrderByDescending(tp => tp.CreatedAt)
             .ToListAsync();
 
         var dtos = _mapper.Map<List<TravelPlanResponseDto>>(plans);
+        for (var index = 0; index < plans.Count; index++)
+        {
+            dtos[index].TotalExpenses = _budgetService.CalculateTotal(plans[index].Expenses, plans[index].Activities);
+            dtos[index].RemainingBudget = plans[index].Budget - dtos[index].TotalExpenses;
+        }
         return Ok(dtos);
     }
 
@@ -90,7 +100,7 @@ public class TravelPlansController : ControllerBase
 
         if (planFromDb == null) return NotFound();
 
-        var totalExpenses = planFromDb.Expenses.Sum(e => e.Amount);
+        var totalExpenses = _budgetService.CalculateTotal(planFromDb.Expenses, planFromDb.Activities);
         var remainingBudget = planFromDb.Budget - totalExpenses;
 
         // Populate cache
@@ -163,19 +173,7 @@ public class TravelPlansController : ControllerBase
         await _dbContext.SaveChangesAsync();
         await _routeInvalidationService.InvalidatePlanAsync(id);
 
-        var totalExpenses = await _dbContext.Expenses
-            .Where(e => e.TravelPlanId == id)
-            .SumAsync(e => e.Amount);
-
-        await _cacheService.SetAsync(new TravelPlanCacheEntry
-        {
-            Id = plan.Id,
-            Name = plan.Name,
-            Budget = plan.Budget,
-            TotalExpenses = totalExpenses,
-            RemainingBudget = plan.Budget - totalExpenses,
-            CachedAt = DateTimeOffset.UtcNow
-        });
+        await _budgetService.RefreshCacheAsync(id);
 
         return NoContent();
     }
