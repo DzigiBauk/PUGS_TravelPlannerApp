@@ -1,0 +1,47 @@
+@RouteService_HostAddress = http://localhost:5003
+@Token = replace-with-jwt
+@PlanId = 1
+@ShareToken = replace-with-share-token
+@InternalApiKey = replace-with-internal-api-key
+
+GET {{RouteService_HostAddress}}/health
+Accept: application/json
+
+###
+
+GET {{RouteService_HostAddress}}/routes/{{PlanId}}
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+###
+
+GET {{RouteService_HostAddress}}/routes/{{PlanId}}?date=2026-07-02
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+###
+
+GET {{RouteService_HostAddress}}/shared-routes/{{ShareToken}}
+Accept: application/json
+
+###
+
+GET {{RouteService_HostAddress}}/shared-routes/{{ShareToken}}?date=2026-07-02
+Accept: application/json
+
+###
+
+DELETE {{RouteService_HostAddress}}/routes/{{PlanId}}/cache?date=2026-07-02
+Authorization: Bearer {{Token}}
+
+###
+
+DELETE {{RouteService_HostAddress}}/routes/{{PlanId}}/cache
+Authorization: Bearer {{Token}}
+
+###
+
+DELETE {{RouteService_HostAddress}}/internal/routes/{{PlanId}}/cache
+X-Route-Service-Key: {{InternalApiKey}}
+
+###
