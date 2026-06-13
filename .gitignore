@@ -11,3 +11,5 @@
 **/dist/
 backend/TravelPlannerAppPackage/
 backend/TravelPlannerAppPackage.Test/
+.build
+.vscode
