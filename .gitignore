@@ -1,0 +1,13 @@
+# Local secrets and environment overrides
+**/.env
+**/.env.*
+!**/.env.example
+**/appsettings.Local.json
+**/appsettings.*.local.json
+
+# Generated output
+**/bin/
+**/obj/
+**/dist/
+backend/TravelPlannerAppPackage/
+backend/TravelPlannerAppPackage.Test/
