@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="TravelPlannerAppType" ApplicationTypeVersion="1.8.2" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="UserService_InstanceCount" DefaultValue="1" />
+    <Parameter Name="UserService_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="TravelPlanService_InstanceCount" DefaultValue="1" />
+    <Parameter Name="TravelPlanService_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="RouteService_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="RouteService_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="RouteService_MinReplicaSetSize" DefaultValue="2" />
+    <Parameter Name="JwtSettings_Secret" DefaultValue="" />
+    <Parameter Name="AdminBootstrap_Email" DefaultValue="" />
+    <Parameter Name="AdminBootstrap_Password" DefaultValue="" />
+    <Parameter Name="AdminBootstrap_Name" DefaultValue="Administrator" />
+    <Parameter Name="TravelPlanService_Url" DefaultValue="" />
+    <Parameter Name="TravelPlanService_InternalApiKey" DefaultValue="" />
+    <Parameter Name="RouteService_Url" DefaultValue="" />
+    <Parameter Name="RouteService_InternalApiKey" DefaultValue="" />
+  </Parameters>
+    <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="UserServicePkg" ServiceManifestVersion="1.8.2" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="Code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[UserService_ASPNETCORE_ENVIRONMENT]" />
+      <EnvironmentVariable Name="JwtSettings__Secret" Value="[JwtSettings_Secret]" />
+      <EnvironmentVariable Name="AdminBootstrap__Email" Value="[AdminBootstrap_Email]" />
+      <EnvironmentVariable Name="AdminBootstrap__Password" Value="[AdminBootstrap_Password]" />
+      <EnvironmentVariable Name="AdminBootstrap__Name" Value="[AdminBootstrap_Name]" />
+      <EnvironmentVariable Name="TravelPlanService__BaseUrl" Value="[TravelPlanService_Url]" />
+      <EnvironmentVariable Name="TravelPlanService__InternalApiKey" Value="[TravelPlanService_InternalApiKey]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="RouteServicePkg" ServiceManifestVersion="1.8.2" />
+    <ConfigOverrides />
+      <EnvironmentOverrides CodePackageRef="Code">
+        <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[RouteService_ASPNETCORE_ENVIRONMENT]" />
+        <EnvironmentVariable Name="JwtSettings__Secret" Value="[JwtSettings_Secret]" />
+        <EnvironmentVariable Name="InternalApi__Key" Value="[RouteService_InternalApiKey]" />
+      </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="TravelPlanServicePkg" ServiceManifestVersion="1.8.2" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="Code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[TravelPlanService_ASPNETCORE_ENVIRONMENT]" />
+      <EnvironmentVariable Name="JwtSettings__Secret" Value="[JwtSettings_Secret]" />
+      <EnvironmentVariable Name="RouteService__BaseUrl" Value="[RouteService_Url]" />
+      <EnvironmentVariable Name="RouteService__InternalApiKey" Value="[RouteService_InternalApiKey]" />
+      <EnvironmentVariable Name="InternalApi__Key" Value="[TravelPlanService_InternalApiKey]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <DefaultServices>
+    <Service Name="UserService" ServicePackageActivationMode="ExclusiveProcess">
+      <StatelessService ServiceTypeName="UserServiceType" InstanceCount="[UserService_InstanceCount]">
+        <SingletonPartition />
+      </StatelessService>
+    </Service>
+    <Service Name="TravelPlanService" ServicePackageActivationMode="ExclusiveProcess">
+      <StatelessService ServiceTypeName="TravelPlanServiceType" InstanceCount="[TravelPlanService_InstanceCount]">
+        <SingletonPartition />
+      </StatelessService>
+    </Service>
+    <Service Name="RouteService" ServicePackageActivationMode="ExclusiveProcess">
+      <StatefulService ServiceTypeName="RouteServiceType" TargetReplicaSetSize="[RouteService_TargetReplicaSetSize]" MinReplicaSetSize="[RouteService_MinReplicaSetSize]">
+        <SingletonPartition />
+      </StatefulService>
+    </Service>
+  </DefaultServices>
+</ApplicationManifest>

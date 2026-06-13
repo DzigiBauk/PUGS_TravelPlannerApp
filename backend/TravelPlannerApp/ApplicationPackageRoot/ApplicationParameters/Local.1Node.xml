@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application Name="fabric:/TravelPlannerApp" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="UserService_InstanceCount" Value="1" />
+    <Parameter Name="UserService_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="TravelPlanService_InstanceCount" Value="1" />
+    <Parameter Name="TravelPlanService_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="RouteService_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="RouteService_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="RouteService_MinReplicaSetSize" Value="2" />
+    <Parameter Name="JwtSettings_Secret" Value="" />
+    <Parameter Name="AdminBootstrap_Email" Value="" />
+    <Parameter Name="AdminBootstrap_Password" Value="" />
+    <Parameter Name="AdminBootstrap_Name" Value="Administrator" />
+    <Parameter Name="TravelPlanService_Url" Value="" />
+    <Parameter Name="TravelPlanService_InternalApiKey" Value="" />
+    <Parameter Name="RouteService_Url" Value="" />
+    <Parameter Name="RouteService_InternalApiKey" Value="" />
+  </Parameters>
+</Application>
