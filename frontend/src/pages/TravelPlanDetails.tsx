@@ -13,12 +13,13 @@ import type {
   DestinationRequestDto,
   TravelPlan,
 } from '../models/TravelPlan';
-import { travelPlanService } from '../services/travelPlanService';
+import { useServices } from '../services/ServicesContext';
 import { getApiErrorMessage } from '../utils/apiError';
 
 export default function TravelPlanDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { travelPlanService } = useServices();
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,7 +36,7 @@ export default function TravelPlanDetails() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [travelPlanService]);
 
   useEffect(() => {
     if (!id) return;
@@ -59,7 +60,7 @@ export default function TravelPlanDetails() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, travelPlanService]);
 
   const mutate = async (
     action: () => Promise<unknown>,

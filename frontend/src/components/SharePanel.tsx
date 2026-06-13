@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ShareToken } from '../models/TravelPlan';
-import { travelPlanService } from '../services/travelPlanService';
+import { useServices } from '../services/ServicesContext';
 import { getApiErrorMessage } from '../utils/apiError';
 import QrCode from './QrCode';
 import SuccessMessage from './SuccessMessage';
@@ -14,6 +14,7 @@ function getShareUrl(token: string) {
 }
 
 export default function SharePanel({ planId }: SharePanelProps) {
+  const { travelPlanService } = useServices();
   const [tokens, setTokens] = useState<ShareToken[]>([]);
   const [expiresAt, setExpiresAt] = useState('');
   const [accessType, setAccessType] = useState<'VIEW' | 'EDIT'>('VIEW');
@@ -33,7 +34,7 @@ export default function SharePanel({ planId }: SharePanelProps) {
     } finally {
       setLoading(false);
     }
-  }, [planId]);
+  }, [planId, travelPlanService]);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +56,7 @@ export default function SharePanel({ planId }: SharePanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [planId]);
+  }, [planId, travelPlanService]);
 
   const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();

@@ -1,11 +1,20 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
+import type { AppServices } from '../services/appServices';
 
-export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-  },
-});
+export function createAppStore(services: AppServices) {
+  return configureStore({
+    reducer: {
+      auth: authReducer,
+    },
+    middleware: getDefaultMiddleware => getDefaultMiddleware({
+      thunk: {
+        extraArgument: services,
+      },
+    }),
+  });
+}
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type AppStore = ReturnType<typeof createAppStore>;
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];

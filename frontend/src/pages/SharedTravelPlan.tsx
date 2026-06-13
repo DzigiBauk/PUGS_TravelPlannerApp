@@ -13,13 +13,15 @@ import type {
   Destination,
   DestinationRequestDto,
   TravelPlan,
+  TravelPlanRequestDto,
 } from '../models/TravelPlan';
-import { travelPlanService, type TravelPlanRequestDto } from '../services/travelPlanService';
+import { useServices } from '../services/ServicesContext';
 import type { RootState } from '../store';
 import { getApiErrorMessage } from '../utils/apiError';
 
 export default function SharedTravelPlan() {
   const { token } = useParams<{ token: string }>();
+  const { travelPlanService } = useServices();
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [accessType, setAccessType] = useState<'VIEW' | 'EDIT'>('VIEW');
@@ -33,7 +35,7 @@ export default function SharedTravelPlan() {
     const data = await travelPlanService.getSharedPlan(token);
     setPlan(data);
     setError('');
-  }, [token]);
+  }, [token, travelPlanService]);
 
   useEffect(() => {
     if (!token) return;
@@ -61,7 +63,7 @@ export default function SharedTravelPlan() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, travelPlanService]);
 
   const mutate = async (action: () => Promise<unknown>, successMessage: string) => {
     try {

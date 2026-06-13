@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { travelPlanService } from '../services/travelPlanService';
+import { useServices } from '../services/ServicesContext';
 import type { TravelPlan } from '../models/TravelPlan';
 import { getApiErrorMessage } from '../utils/apiError';
 
 export default function TravelPlanForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { travelPlanService } = useServices();
   const isEdit = Boolean(id);
 
   const [formData, setFormData] = useState({
@@ -52,7 +53,7 @@ export default function TravelPlanForm() {
     return () => {
       cancelled = true;
     };
-  }, [isEdit, id]);
+  }, [isEdit, id, travelPlanService]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

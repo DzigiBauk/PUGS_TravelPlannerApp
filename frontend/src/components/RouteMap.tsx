@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
 import type { Activity } from '../models/TravelPlan';
 import type { TravelRoute } from '../models/Route';
-import { routeService } from '../services/routeService';
+import { useServices } from '../services/ServicesContext';
 import { getApiErrorMessage } from '../utils/apiError';
 import { environment } from '../config/environment';
 
@@ -61,6 +61,7 @@ function formatDuration(minutes: number) {
 }
 
 function RouteMapContent({ planId, date, shareToken }: RouteMapContentProps) {
+  const { routeService } = useServices();
   const [route, setRoute] = useState<TravelRoute | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -88,7 +89,7 @@ function RouteMapContent({ planId, date, shareToken }: RouteMapContentProps) {
     return () => {
       cancelled = true;
     };
-  }, [date, planId, shareToken]);
+  }, [date, planId, routeService, shareToken]);
 
   if (loading) {
     return <div className="route-map-state">Loading route...</div>;

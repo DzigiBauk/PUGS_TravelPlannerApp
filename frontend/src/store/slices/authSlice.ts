@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { User, RegisterRequest, LoginRequest, AuthResponse, UpdateUserRequest } from '../../models/User';
-import { authService } from '../../services/authService';
+import type { AppServices } from '../../services/appServices';
 import { getApiErrorMessage } from '../../utils/apiError';
 
 const USER_STORAGE_KEY = 'user';
@@ -33,11 +33,16 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const register = createAsyncThunk(
+interface AppThunkConfig {
+  extra: AppServices;
+  rejectValue: string;
+}
+
+export const register = createAsyncThunk<AuthResponse, RegisterRequest, AppThunkConfig>(
   'auth/register',
-  async (data: RegisterRequest, { rejectWithValue }) => {
+  async (data, { extra, rejectWithValue }) => {
     try {
-      const response = await authService.register(data);
+      const response = await extra.authService.register(data);
       localStorage.setItem(TOKEN_STORAGE_KEY, response.token);
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(response.user));
       return response;
@@ -47,11 +52,11 @@ export const register = createAsyncThunk(
   }
 );
 
-export const login = createAsyncThunk(
+export const login = createAsyncThunk<AuthResponse, LoginRequest, AppThunkConfig>(
   'auth/login',
-  async (data: LoginRequest, { rejectWithValue }) => {
+  async (data, { extra, rejectWithValue }) => {
     try {
-      const response = await authService.login(data);
+      const response = await extra.authService.login(data);
       localStorage.setItem(TOKEN_STORAGE_KEY, response.token);
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(response.user));
       return response;
@@ -61,11 +66,11 @@ export const login = createAsyncThunk(
   }
 );
 
-export const fetchCurrentUser = createAsyncThunk(
+export const fetchCurrentUser = createAsyncThunk<User, void, AppThunkConfig>(
   'auth/fetchCurrentUser',
-  async (_, { rejectWithValue }) => {
+  async (_, { extra, rejectWithValue }) => {
     try {
-      const user = await authService.getCurrentUser();
+      const user = await extra.authService.getCurrentUser();
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
       return user;
     } catch (error: unknown) {
@@ -74,11 +79,11 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 );
 
-export const updateCurrentUser = createAsyncThunk(
+export const updateCurrentUser = createAsyncThunk<User, UpdateUserRequest, AppThunkConfig>(
   'auth/updateCurrentUser',
-  async (data: UpdateUserRequest, { rejectWithValue }) => {
+  async (data, { extra, rejectWithValue }) => {
     try {
-      const user = await authService.updateCurrentUser(data);
+      const user = await extra.authService.updateCurrentUser(data);
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
       return user;
     } catch (error: unknown) {

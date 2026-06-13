@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import type { TravelPlan } from '../models/TravelPlan';
-import type { TravelPlanRequestDto } from '../services/travelPlanService';
+import type { TravelPlan, TravelPlanRequestDto } from '../models/TravelPlan';
 import { getApiErrorMessage } from '../utils/apiError';
 
 interface SharedPlanFormProps {

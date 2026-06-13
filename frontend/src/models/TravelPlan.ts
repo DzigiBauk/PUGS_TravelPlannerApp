@@ -18,6 +18,15 @@ export interface TravelPlan {
   checklistItems?: ChecklistItem[];
 }
 
+export interface TravelPlanRequestDto {
+  name: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  budget: number;
+  notes?: string;
+}
+
 export interface AdminTravelPlan {
   id: number;
   userId: number;

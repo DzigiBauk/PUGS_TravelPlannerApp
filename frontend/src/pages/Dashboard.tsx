@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import SuccessMessage from '../components/SuccessMessage';
-import { travelPlanService } from '../services/travelPlanService';
+import { useServices } from '../services/ServicesContext';
 import type { TravelPlan } from '../models/TravelPlan';
 import { getApiErrorMessage } from '../utils/apiError';
 
 export default function Dashboard() {
   const location = useLocation();
+  const { travelPlanService } = useServices();
   const [plans, setPlans] = useState<TravelPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,7 +46,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [travelPlanService]);
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this travel plan?')) return;

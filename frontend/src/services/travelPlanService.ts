@@ -1,4 +1,4 @@
-import axios from 'axios';
+import type { AxiosInstance } from 'axios';
 import type {
   TravelPlan,
   AdminTravelPlan,
@@ -11,33 +11,9 @@ import type {
   ShareToken,
   ShareTokenRequestDto,
   SharedPlanAccess,
+  TravelPlanRequestDto,
 } from '../models/TravelPlan';
 import { ExpenseCategory, type Expense, type ExpenseRequestDto } from '../models/Expense';
-import { environment } from '../config/environment';
-
-const api = axios.create({
-  baseURL: environment.travelPlanServiceUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export interface TravelPlanRequestDto {
-  name: string;
-  description?: string;
-  startDate: string;
-  endDate: string;
-  budget: number;
-  notes?: string;
-}
 
 type BackendExpenseCategory = ExpenseCategory | string;
 
@@ -134,7 +110,52 @@ function normalizeTravelPlan(plan: BackendTravelPlan): TravelPlan {
   };
 }
 
-export const travelPlanService = {
+export interface TravelPlanService {
+  getAdminTravelPlans(): Promise<AdminTravelPlan[]>;
+  deleteAdminTravelPlan(id: number): Promise<void>;
+  getAll(): Promise<TravelPlan[]>;
+  getById(id: number): Promise<TravelPlan>;
+  create(data: TravelPlanRequestDto): Promise<TravelPlan>;
+  update(id: number, data: TravelPlanRequestDto): Promise<void>;
+  delete(id: number): Promise<void>;
+  getDestinations(planId: number): Promise<Destination[]>;
+  createDestination(planId: number, dto: DestinationRequestDto): Promise<Destination>;
+  updateDestination(planId: number, destinationId: number, dto: DestinationRequestDto): Promise<void>;
+  deleteDestination(planId: number, destinationId: number): Promise<void>;
+  getActivities(planId: number): Promise<Activity[]>;
+  createActivity(planId: number, dto: ActivityRequestDto): Promise<Activity>;
+  updateActivity(planId: number, activityId: number, dto: ActivityRequestDto): Promise<void>;
+  deleteActivity(planId: number, activityId: number): Promise<void>;
+  getExpenses(planId: number): Promise<Expense[]>;
+  createExpense(planId: number, dto: ExpenseRequestDto): Promise<Expense>;
+  updateExpense(planId: number, expenseId: number, dto: ExpenseRequestDto): Promise<void>;
+  deleteExpense(planId: number, expenseId: number): Promise<void>;
+  getChecklistItems(planId: number): Promise<ChecklistItem[]>;
+  createChecklistItem(planId: number, dto: ChecklistItemRequestDto): Promise<ChecklistItem>;
+  updateChecklistItem(planId: number, itemId: number, dto: ChecklistItemRequestDto): Promise<void>;
+  deleteChecklistItem(planId: number, itemId: number): Promise<void>;
+  getShareTokens(planId: number): Promise<ShareToken[]>;
+  createShareToken(planId: number, dto: ShareTokenRequestDto): Promise<ShareToken>;
+  revokeShareToken(planId: number, tokenId: number): Promise<void>;
+  getSharedPlan(token: string): Promise<TravelPlan>;
+  getSharedPlanAccess(token: string): Promise<SharedPlanAccess>;
+  updateSharedPlan(token: string, dto: TravelPlanRequestDto): Promise<void>;
+  createSharedDestination(token: string, dto: DestinationRequestDto): Promise<Destination>;
+  updateSharedDestination(token: string, id: number, dto: DestinationRequestDto): Promise<void>;
+  deleteSharedDestination(token: string, id: number): Promise<void>;
+  createSharedActivity(token: string, dto: ActivityRequestDto): Promise<Activity>;
+  updateSharedActivity(token: string, id: number, dto: ActivityRequestDto): Promise<void>;
+  deleteSharedActivity(token: string, id: number): Promise<void>;
+  createSharedExpense(token: string, dto: ExpenseRequestDto): Promise<Expense>;
+  updateSharedExpense(token: string, id: number, dto: ExpenseRequestDto): Promise<void>;
+  deleteSharedExpense(token: string, id: number): Promise<void>;
+  createSharedChecklistItem(token: string, dto: ChecklistItemRequestDto): Promise<ChecklistItem>;
+  updateSharedChecklistItem(token: string, id: number, dto: ChecklistItemRequestDto): Promise<void>;
+  deleteSharedChecklistItem(token: string, id: number): Promise<void>;
+}
+
+export function createTravelPlanService(api: AxiosInstance): TravelPlanService {
+  return {
   getAdminTravelPlans: async (): Promise<AdminTravelPlan[]> => {
     const response = await api.get<AdminTravelPlan[]>('/admin/travel-plans');
     return response.data;
@@ -331,6 +352,5 @@ export const travelPlanService = {
   deleteSharedChecklistItem: async (token: string, id: number): Promise<void> => {
     await api.delete(`/shared/${encodeURIComponent(token)}/checklist/${id}`);
   },
-};
-
-export default api;
+  };
+}

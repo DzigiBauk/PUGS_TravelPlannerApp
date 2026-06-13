@@ -1,23 +1,13 @@
-import axios from 'axios';
-import { environment } from '../config/environment';
+import type { AxiosInstance } from 'axios';
 import type { TravelRoute } from '../models/Route';
 
-const routeApi = axios.create({
-  baseURL: environment.routeServiceUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export interface RouteService {
+  getRoute(planId: number, date?: string): Promise<TravelRoute>;
+  getSharedRoute(token: string, date?: string): Promise<TravelRoute>;
+}
 
-routeApi.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export const routeService = {
+export function createRouteService(routeApi: AxiosInstance): RouteService {
+  return {
   getRoute: async (planId: number, date?: string): Promise<TravelRoute> => {
     const response = await routeApi.get<TravelRoute>(`/routes/${planId}`, {
       params: date ? { date } : undefined,
@@ -30,4 +20,5 @@ export const routeService = {
     });
     return response.data;
   },
-};
+  };
+}

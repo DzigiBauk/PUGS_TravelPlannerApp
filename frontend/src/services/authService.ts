@@ -1,23 +1,18 @@
-import axios from 'axios';
+import type { AxiosInstance } from 'axios';
 import type { RegisterRequest, LoginRequest, AuthResponse, UpdateUserRequest, User, UserRole } from '../models/User';
-import { environment } from '../config/environment';
 
-const api = axios.create({
-  baseURL: environment.userServiceUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export interface AuthService {
+  register(data: RegisterRequest): Promise<AuthResponse>;
+  login(data: LoginRequest): Promise<AuthResponse>;
+  getAllUsers(): Promise<User[]>;
+  getCurrentUser(): Promise<User>;
+  updateCurrentUser(data: UpdateUserRequest): Promise<User>;
+  updateUserRole(id: number, role: UserRole): Promise<User>;
+  deleteUser(id: number): Promise<void>;
+}
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export const authService = {
+export function createAuthService(api: AxiosInstance): AuthService {
+  return {
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/auth/register', data);
     return response.data;
@@ -51,6 +46,5 @@ export const authService = {
   deleteUser: async (id: number): Promise<void> => {
     await api.delete(`/users/${id}`);
   },
-};
-
-export default api;
+  };
+}

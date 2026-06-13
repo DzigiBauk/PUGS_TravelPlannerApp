@@ -4,14 +4,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { RootState } from '../store';
 import type { User, UserRole } from '../models/User';
 import type { AdminTravelPlan } from '../models/TravelPlan';
-import { authService } from '../services/authService';
-import { travelPlanService } from '../services/travelPlanService';
+import { useServices } from '../services/ServicesContext';
 import { getApiErrorMessage } from '../utils/apiError';
 import SuccessMessage from '../components/SuccessMessage';
 
 export default function AdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { authService, travelPlanService } = useServices();
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const [users, setUsers] = useState<User[]>([]);
   const [plans, setPlans] = useState<AdminTravelPlan[]>([]);
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authService, travelPlanService]);
 
   const updateRole = async (user: User, role: UserRole) => {
     if (user.role === role) return;
