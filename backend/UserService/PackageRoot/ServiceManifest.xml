@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServiceManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="UserServicePkg" Version="1.8.2" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <ServiceTypes>
+    <StatelessServiceType ServiceTypeName="UserServiceType" />
+  </ServiceTypes>
+  <CodePackage Name="Code" Version="1.8.2">
+    <EntryPoint>
+      <ExeHost>
+        <Program>UserService.exe</Program>
+        <WorkingFolder>CodePackage</WorkingFolder>
+      </ExeHost>
+    </EntryPoint>
+    <EnvironmentVariables>
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="" />
+      <EnvironmentVariable Name="JwtSettings__Secret" Value="" />
+      <EnvironmentVariable Name="AdminBootstrap__Email" Value="" />
+      <EnvironmentVariable Name="AdminBootstrap__Password" Value="" />
+      <EnvironmentVariable Name="AdminBootstrap__Name" Value="" />
+      <EnvironmentVariable Name="TravelPlanService__BaseUrl" Value="" />
+      <EnvironmentVariable Name="TravelPlanService__InternalApiKey" Value="" />
+    </EnvironmentVariables>
+  </CodePackage>
+  <ConfigPackage Name="Config" Version="1.8.2" />
+  <Resources>
+    <Endpoints>
+      <Endpoint Name="ServiceEndpoint" Protocol="http" Port="5001" />
+    </Endpoints>
+  </Resources>
+</ServiceManifest>
