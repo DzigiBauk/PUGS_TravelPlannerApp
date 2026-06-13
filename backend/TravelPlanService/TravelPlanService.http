@@ -1,0 +1,55 @@
+@TravelPlanService_HostAddress = http://localhost:5002
+@Token = replace-with-jwt
+@AdminToken = replace-with-admin-jwt
+@PlanId = 1
+
+GET {{TravelPlanService_HostAddress}}/health
+Accept: application/json
+
+###
+
+GET {{TravelPlanService_HostAddress}}/travel-plans
+Accept: application/json
+
+###
+
+POST {{TravelPlanService_HostAddress}}/travel-plans
+Content-Type: application/json
+
+{
+  "name": "Summer Trip",
+  "description": "A week in Italy",
+  "startDate": "2026-07-01",
+  "endDate": "2026-07-07",
+  "budget": 2000,
+  "notes": "Remember sunscreen"
+}
+
+###
+
+GET {{TravelPlanService_HostAddress}}/admin/travel-plans
+Authorization: Bearer {{AdminToken}}
+Accept: application/json
+
+###
+
+DELETE {{TravelPlanService_HostAddress}}/admin/travel-plans/{{PlanId}}
+Authorization: Bearer {{AdminToken}}
+
+###
+
+POST {{TravelPlanService_HostAddress}}/travel-plans/{{PlanId}}/activities
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "name": "Colosseum tour",
+  "date": "2026-07-02",
+  "time": "10:00:00",
+  "location": "Piazza del Colosseo",
+  "latitude": 41.8902,
+  "longitude": 12.4922,
+  "status": "Planned"
+}
+
+###

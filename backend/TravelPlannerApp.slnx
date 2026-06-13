@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="TravelPlanner.Common/TravelPlanner.Common.csproj" />
+  <Project Path="UserService/UserService.csproj" />
+  <Project Path="TravelPlanService/TravelPlanService.csproj" />
+  <Project Path="RouteService/RouteService.csproj" />
+</Solution>
